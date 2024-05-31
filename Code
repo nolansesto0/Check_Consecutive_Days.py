@@ -1,0 +1,50 @@
+# Check_Consecutive_Days.py
+Checks for 3 back to back to back days with the last 3 days for higher highs and higher lows as that is a a bearish sequence due to an overexposure to the bull. 
+------------------------------------
+import yfinance as yf
+import pandas as pd
+from datetime import datetime, timedelta
+
+# Function to check for consecutive days with higher highs and higher lows
+def check_consecutive_higher_highs_lows(ticker, start_date, end_date):
+    # Fetch data from yfinance
+    try:
+        data = yf.download(ticker, start=start_date, end=end_date)
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return
+
+    # Print the fetched data to ensure it's being downloaded correctly
+    print(data)
+
+    if data.empty or len(data) < 3:
+        print("Not enough data to check for 3 consecutive days.")
+        return
+
+    # Ensure the data is sorted by date
+    data = data.sort_index()
+
+    # Print the lows of the days
+    print("\nLows of the days:")
+    for date, low in zip(data.index, data['Low']):
+        print(f"{date.date()}: {low}")
+
+    # Check for 3 consecutive days with higher highs and higher lows
+    higher_highs_lows = True
+    for i in range(2, len(data)):
+        if not (data['High'].iloc[i] > data['High'].iloc[i - 1] > data['High'].iloc[i - 2] and
+                data['Low'].iloc[i] > data['Low'].iloc[i - 1] > data['Low'].iloc[i - 2]):
+            higher_highs_lows = False
+            break
+
+    if higher_highs_lows:
+        print("\n***WAIT UNTIL CLEAR. DO NOT TRADE! WAIT UNTIL CLEAR. DO NOT TRADE***")
+    else:
+        print("\n***ALL CLEAR TO RUN SPREAD HACK STRATEGY***")
+
+# Define the date range
+start_date = '2024-05-22'
+end_date = '2024-06-01'  # Use the day after the end date to include the end date in the data
+
+# Check for consecutive higher highs and higher lows
+check_consecutive_higher_highs_lows('QQQ', start_date, end_date)
